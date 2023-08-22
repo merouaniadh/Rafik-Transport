@@ -4,12 +4,11 @@ import 'package:eva_icons_flutter/eva_icons_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:rafik/Controller/Bindings/homepagebindings.dart';
-import 'package:rafik/View/Compenents/components.dart';
-import 'package:rafik/View/Compenents/theme.dart';
 
 import '../../../Controller/locationsController.dart';
 import '../Profile/profilepage.dart';
@@ -32,8 +31,13 @@ class _HomePageState extends State<HomePage> {
 
   final Set<Marker> markers = Set();
 
-  void _onMapCreated(GoogleMapController controller) {
+  void _onMapCreated(GoogleMapController controller) async {
     _controller.complete(controller);
+
+    Position position = await locationsController.determinePosition();
+
+    locationsController.pickupEditingController.text = await locationsController
+        .getLocationName(position.latitude, position.longitude);
   }
 
   @override

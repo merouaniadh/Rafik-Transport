@@ -1,18 +1,28 @@
-import 'dart:ui';
 
+import 'dart:convert';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:http/http.dart' as http;
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:latlong2/latlong.dart' as latlong;
+
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
+import 'package:latlong2/latlong.dart';
 
 import 'package:rafik/Controller/authcontroller.dart';
+import 'package:rafik/Controller/locationsController.dart';
 import 'package:rafik/View/Compenents/theme.dart';
 import 'package:rafik/View/HomePages/DriverPages/userslistpage.dart';
 
 import '../../../Controller/ridescontroller.dart';
 import '../../Compenents/components.dart';
+import '../UserPages/mapPage.dart';
 import 'DriverProfilePage.dart';
 import 'driverridedetails.dart';
 
@@ -22,21 +32,29 @@ class DriverHomePage extends StatefulWidget {
 }
 
 class DriverHomePageState extends State<DriverHomePage> {
+
+
+
   TextEditingController departlocation = TextEditingController();
-  TextEditingController destination = TextEditingController();
+  TextEditingController destinationC = TextEditingController();
   // TextEditingController date = TextEditingController();
   TextEditingController seats = TextEditingController();
   TextEditingController price = TextEditingController();
   var currentIndex = 0;
   RidesController ridesController = Get.find();
   Authcontroller authcontroller = Get.find();
+  LocationsController locationsController = Get.find();
+ 
+  
   String title = 'Your Upcoming Rides';
   @override
   Widget build(BuildContext context) {
+  //locationsController.getCurrentPosition();
+  departlocation.text =locationsController.departlocation;
     Size size = MediaQuery.of(context).size;
     return SafeArea(
       child: Scaffold(
-          backgroundColor: lightgreen,
+          backgroundColor: Color.fromARGB(255, 255, 251, 251),
           //extendBodyBehindAppBar: true,
           appBar: AppBar(
               automaticallyImplyLeading: false,
@@ -44,12 +62,12 @@ class DriverHomePageState extends State<DriverHomePage> {
               elevation: 5,
               centerTitle: false,
               title: Text(
-                title,
+              "Welcome back ${authcontroller.driverProfile!.name}" ,
                 style: Get.textTheme.headlineLarge,
                 // style: Get.textTheme.titleLarge!.copyWith(color: white),
               )),
           bottomNavigationBar: Container(
-            color: lightgreen,
+            color: white,
             height: size.width * .155,
             child: ListView.builder(
               itemCount: 4,
@@ -81,7 +99,7 @@ class DriverHomePageState extends State<DriverHomePage> {
                     children: [
                       SizedBox(height: size.width * .014),
                       Icon(listOfIcons[index],
-                          size: size.width * .076, color: Colors.white),
+                          size: size.width * .076, color: lightgreen),
                       AnimatedContainer(
                         duration: Duration(milliseconds: 1500),
                         curve: Curves.fastLinearToSlowEaseIn,
@@ -93,7 +111,7 @@ class DriverHomePageState extends State<DriverHomePage> {
                         width: size.width * .153,
                         height: index == currentIndex ? size.width * .014 : 0,
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: lightgreen,
                           borderRadius: BorderRadius.vertical(
                             top: Radius.circular(20),
                           ),
@@ -137,13 +155,17 @@ class DriverHomePageState extends State<DriverHomePage> {
       child: OpenContainer(
         closedBuilder: (_, openContainer) {
           return Container(
-            height: Get.height * 0.2,
-            width: Get.width * 0.95,
-            child: Row(
+           // height: Get.height * 0.2,
+            //width: Get.width * 0.95,
+            padding: EdgeInsets.all(5),
+          color: lightgreen,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(
-                    width: Get.width * 0.4,
-                    height: Get.height * 0.2,
+                Container(
+                      height: Get.height * 0.14,
+            width: Get.width * 0.8,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: Image.network(
@@ -151,53 +173,41 @@ class DriverHomePageState extends State<DriverHomePage> {
                         fit: BoxFit.cover,
                       ),
                     )),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Text(
-                        '${ridesController.searchedrides[index].from} - ${ridesController.searchedrides[index].to}',
-                        style: Get.textTheme.headlineLarge!.copyWith(
-                          color: Colors.black,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
+                SizedBox(
+                  height: 15,
+                  width: Get.width,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [ Text(
+                      '${ridesController.searchedrides[index].from} - ${ridesController.searchedrides[index].to}',
+                      style: Get.textTheme.headlineLarge!.copyWith(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        overflow: TextOverflow.fade
+                  
                       ),
-                      Text(
-                        'Date : ${ridesController.searchedrides[index].date}',
-                        style: Get.textTheme.headlineLarge!.copyWith(
-                          color: Colors.black,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Text(
-                        'Price : ${ridesController.searchedrides[index].price}',
-                        style: Get.textTheme.headlineLarge!.copyWith(
-                          color: Colors.black,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Text(
-                        'Seats availble : ${ridesController.searchedrides[index].seats}',
-                        style: Get.textTheme.headlineLarge!.copyWith(
-                          color: Colors.black,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Text(
-                        'Rating : ${ridesController.searchedrides[index].driver!.rating}',
-                        style: Get.textTheme.headlineLarge!.copyWith(
-                          color: Colors.black,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+                    ),],
+                   
+                  ),
+                ),
+                Text(
+                  'Date : ${ridesController.searchedrides[index].date}',
+                  style: Get.textTheme.headlineLarge!.copyWith(
+                    color: Colors.white,
+                     fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                    overflow: TextOverflow.fade
+
+                  ),
+                ),
+                Text(
+                  'Price : ${ridesController.searchedrides[index].price}',
+                  style: Get.textTheme.headlineLarge!.copyWith(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                    overflow: TextOverflow.fade
                   ),
                 ),
               ],
@@ -221,92 +231,144 @@ class DriverHomePageState extends State<DriverHomePage> {
   }
 
   Widget addridepage() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+    
+    return SingleChildScrollView(
+      child: Column(
+        children: [
             SizedBox(
-              height: Get.width * 0.4,
-              width: Get.width * 0.4,
-              child: Image.asset(
-                'assets/logo.png',
-                fit: BoxFit.cover,
-              ),
+              height: Get.height * 0.4,
+              width: Get.width,
+              child: flutterMap()),
+     
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Container(  height: Get.height * 0.45,width: Get.width/2,color: Colors.amber,),
+                  
+    
+               
+                const SizedBox(
+                  height: 30,
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),spreadRadius: 5,
+                        blurRadius: 10
+                      )
+                    ]
+                  ),
+                  child: mytextField(controller: departlocation, label: 'Depart Location')),
+                const SizedBox(
+                  height: 30,
+                ),
+                Container(   decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),spreadRadius: 5,
+                        blurRadius: 10
+                      )
+                    ]
+                  ),child: mytextField(controller: destinationC, label: 'Destination Location')),
+                const SizedBox(
+                  height: 30,
+                ),
+                Container(   decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),spreadRadius: 5,
+                        blurRadius: 10
+                      )
+                    ]
+                  ),child: mytextField(controller: price, label: 'Price')),
+                const SizedBox(
+                  height: 30,
+                ),
+                Container(   decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),spreadRadius: 5,
+                        blurRadius: 10
+                      )
+                    ]
+                  ),child: mytextField(controller: seats, label: 'Number Of Seats Available')),
+                const SizedBox(
+                  height: 30,
+                ),
+                //  mytextField(controller: date, label: 'Date'),
+    
+                Container(   decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),spreadRadius: 5,
+                        blurRadius: 10
+                      )
+                    ]
+                  ),
+                  child: mybutton(
+                      ontap: () {
+                        print('Creat New ride tapped');
+                    
+                        DateTime now = DateTime.now();
+                    
+                        DateFormat yearFormat = DateFormat('yyyy');
+                        DateFormat monthFormat = DateFormat('MM');
+                        DateFormat dayFormat = DateFormat('dd');
+                        DateFormat hourFormat = DateFormat('HH');
+                        DateFormat minuteFormat = DateFormat('mm');
+                    
+                        String year = yearFormat.format(now);
+                        String month = monthFormat.format(now);
+                        String day = dayFormat.format(now);
+                        String hour = hourFormat.format(now);
+                        String minute = minuteFormat.format(now);
+                    
+                        print('$year-$month-$day $hour:$minute');
+                        ridesController.addnewRide(
+                            from: departlocation.text,
+                            to: destinationC.text,
+                            price: price.text,
+                            date: '$month-$day $hour:$minute',
+                            seats: seats.text,
+                            driver: authcontroller.driverProfile!,
+                            startpoint: GeoPoint(locationsController.currentPosition.latitude, locationsController.currentPosition.longitude),
+                            endpoint: GeoPoint(destenation!.point.latitude, destenation!.point.longitude)
+                            );
+                      },
+                      cntr: Text('Creat New Ride')),
+                )
+              ],
             ),
-            const SizedBox(
-              height: 30,
-            ),
-            mytextField(controller: departlocation, label: 'Depart Location'),
-            const SizedBox(
-              height: 30,
-            ),
-            mytextField(controller: destination, label: 'Destination Location'),
-            const SizedBox(
-              height: 30,
-            ),
-            mytextField(controller: price, label: 'Price'),
-            const SizedBox(
-              height: 30,
-            ),
-            mytextField(controller: seats, label: 'Number Of Seats Available'),
-            const SizedBox(
-              height: 30,
-            ),
-            //  mytextField(controller: date, label: 'Date'),
-
-            mybutton(
-                ontap: () {
-                  print('Creat New ride tapped');
-
-                  DateTime now = DateTime.now();
-
-                  DateFormat yearFormat = DateFormat('yyyy');
-                  DateFormat monthFormat = DateFormat('MM');
-                  DateFormat dayFormat = DateFormat('dd');
-                  DateFormat hourFormat = DateFormat('HH');
-                  DateFormat minuteFormat = DateFormat('mm');
-
-                  String year = yearFormat.format(now);
-                  String month = monthFormat.format(now);
-                  String day = dayFormat.format(now);
-                  String hour = hourFormat.format(now);
-                  String minute = minuteFormat.format(now);
-
-                  print('$year-$month-$day $hour:$minute');
-                  ridesController.addnewRide(
-                      from: departlocation.text,
-                      to: destination.text,
-                      price: price.text,
-                      date: '$year-$month-$day $hour:$minute',
-                      seats: seats.text,
-                      driver: authcontroller.driverProfile!);
-                },
-                cntr: Text('Creat New Ride'))
-          ],
-        ),
+          ),
+           
+           ],
       ),
     );
   }
 
   Widget bodycontenent() {
-    return currentIndex == 0
+    return  GetBuilder<LocationsController>(builder: (locationsController){
+
+      return locationsController.isloading ? Center(child: CircularProgressIndicator(),)  : currentIndex == 0
         ? GetBuilder<RidesController>(builder: (ridecontrller) {
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ListView.separated(
-                physics: BouncingScrollPhysics(),
-                itemBuilder: (context, index) {
-                  return ridedetails(index);
-                },
-                itemCount: ridecontrller.searchedrides.length,
-                separatorBuilder: (context, index) {
-                  return const SizedBox(
-                    height: 20,
-                  );
-                },
-              ),
+            return GridView.builder(
+         //       padding: EdgeInsets.symmetric(horizontal: 10),
+
+              physics: BouncingScrollPhysics(),
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ridedetails(index),
+                );
+              },
+              itemCount: ridecontrller.searchedrides.length,
+               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+
+      ),
             );
           })
         : currentIndex == 1
@@ -314,5 +376,96 @@ class DriverHomePageState extends State<DriverHomePage> {
             : currentIndex == 2
                 ? addridepage()
                 : DriverProfileScreen();
+    }) ;
   }
+
+ Marker? destenation = Marker(point: LatLng(36.071999,4.7381114),builder: (context) {
+                return Image.asset("assets/dest.png");
+              },);
+List<LatLng> points = [];
+          void    getCoordinates(destenation) async {
+    // Requesting for openrouteservice api
+    var response = await http.get(getRouteUrl(
+        "${locationsController.currentPosition.latitude},${locationsController.currentPosition.longitude}",
+        '${destenation.latitude},${destenation.longitude}'));
+    setState(() {
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+       var listOfPoints = data['features'][0]['geometry']['coordinates'];
+        points = listOfPoints
+            .map((p) => LatLng(p[1].toDouble(), p[0].toDouble()))
+            .toList();
+      } else {
+        Fluttertoast.showToast(
+            msg: "This is Center Short Toast",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.CENTER,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0);
+        print(response.body);
+      }
+    });
+  }
+
+Widget flutterMap(){
+  return  FlutterMap(
+          options: MapOptions(
+            onTap: (tapPosition, point) async{
+            String locName =   await locationsController.getLocationName(point.latitude,point.longitude);
+              setState(() {
+                  destenation = Marker(
+                      width: 40
+                    ,
+                    height: 40,
+                    point: LatLng(point.latitude,point.longitude),builder: (context) {
+              print("NEw Psition");
+                return Image.asset("assets/dest.png",fit: BoxFit.contain,);
+              },);
+              destinationC.text =  locName;
+                   
+              });
+          
+            },
+            zoom: 10,
+            center:
+              latlong.LatLng(locationsController.currentPosition.latitude, locationsController.currentPosition.longitude),
+          ),
+          children: [
+            // Layer that adds the map
+            TileLayer(
+              urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+              userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+            ),
+            // Layer that adds points the map
+            MarkerLayer(
+              markers: [
+                // Depart Marker
+                Marker(
+                  point: LatLng(
+                      locationsController.currentPosition.latitude, locationsController.currentPosition.longitude),
+                 width: 40
+                    ,
+                    height: 40,
+              
+                  builder: (context) => Image.asset("assets/currentLoc.png"
+                  ,fit: BoxFit.contain,)
+                ),
+                // Dest Marker
+                destenation ?? destenation! ,
+              ],
+            ),
+
+      PolylineLayer(
+              polylineCulling: false,
+              polylines: [
+                Polyline(
+                    points: points, color: Colors.lightBlue, strokeWidth: 20),
+              ],
+            ),
+          ],
+        );
+       
+}
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:rafik/Controller/locationsController.dart';
+import 'package:rafik/Controller/ridescontroller.dart';
 import 'package:rafik/Controller/usercontoller.dart';
 import 'package:rafik/View/Compenents/theme.dart';
 
@@ -9,6 +11,7 @@ import '../../../Controller/authcontroller.dart';
 class DriverProfileScreen extends StatelessWidget {
   DriverProfileScreen({Key? key}) : super(key: key);
   Authcontroller authcontroller = Get.put(Authcontroller(), permanent: true);
+  RidesController ridesController = Get.put(RidesController(), permanent: true);
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +20,7 @@ class DriverProfileScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: Container(
           // padding: const EdgeInsets.all(10),
-          color: lightgreen,
+          color: Color.fromARGB(255, 255, 251, 251),
           child: Column(
             children: [
               const SizedBox(height: 15),
@@ -87,16 +90,20 @@ class DriverProfileScreen extends StatelessWidget {
               ),
 
               /// -- BUTTON
-              SizedBox(
+           
+
+   SizedBox(
                 width: 200,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    ridesController.getFees(authcontroller.driverProfile!.uid);
+                  },
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: white,
+                      backgroundColor: Colors.amber,
                       side: BorderSide.none,
                       shape: const StadiumBorder()),
-                  child: const Text('Messeges',
-                      style: TextStyle(color: Color.fromARGB(255, 22, 80, 24))),
+                  child: const Text('Get Fees',
+                      style: TextStyle(color: Color.fromARGB(255, 255, 255, 255))),
                 ),
               ),
 
@@ -204,12 +211,12 @@ class ProfileMenuWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(100),
           color: iconColor.withOpacity(0.1),
         ),
-        child: Icon(icon, color: iconColor),
+        child: Icon(icon, color:title=="Logout" ? Colors.pink :  green),
       ),
       title: Text(title,
           style:
-              Theme.of(context).textTheme.bodyText1?.apply(color: textColor)),
-      trailing: endIcon
+              Theme.of(context).textTheme.bodyText1?.apply(color:title=="Logout" ? Colors.pink : lightgreen)),
+      trailing: endIcon 
           ? Container(
               width: 30,
               height: 30,

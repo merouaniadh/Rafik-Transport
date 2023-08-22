@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:rafik/Controller/authcontroller.dart';
 import 'package:rafik/Controller/ridescontroller.dart';
 
 import '../../../Controller/locationsController.dart';
@@ -18,6 +19,7 @@ class DriverRideDetails extends StatelessWidget {
   final Ride ride;
   final LocationsController locationsController = Get.find();
   final RidesController ridesController = Get.find();
+  final Authcontroller authcontroller = Get.put(Authcontroller());
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +28,7 @@ class DriverRideDetails extends StatelessWidget {
         appBar: AppBar(
           centerTitle: true,
           title: const Text(
-            'Book a ride',
+            'Ride Detail',
             style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
           ),
           leading: IconButton(
@@ -49,18 +51,23 @@ class DriverRideDetails extends StatelessWidget {
                 const SizedBox(height: 10),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Iconsax.location,
-                        color: pink,
-                      ),
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      Text('${ride.from} - ${ride.to}',
-                          style: Get.textTheme.bodyMedium),
-                    ],
+                  child: SizedBox(
+                    height: 20,
+                    width: Get.width,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        Icon(
+                          Iconsax.location,
+                          color: pink,
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Text('${ride.from} - ${ride.to}',
+                            style: Get.textTheme.bodyMedium),
+                      ],
+                    ),
                   ),
                 ),
 
@@ -147,18 +154,30 @@ class DriverRideDetails extends StatelessWidget {
                 const SizedBox(
                   height: 25,
                 ),
-                Center(
+             authcontroller.driverProfile!.uid! == ride.driver!.uid ?   Center(
                   child: mybutton(
                     bgcolor: pink,
                     ontap: () {
                       print(ride.driver!.uid);
+                      Get.dialog(AlertDialog(
+  title: Text("Are you sure you want to delete this ride?"),
+  actions: [
+    ElevatedButton(child: Text("Confirm"),onPressed: (){ ridesController.deleteride(ride!.uid!);
+   Get.offAllNamed("/driverhome");},style: ElevatedButton.styleFrom(backgroundColor: Colors.pink),),
+    ElevatedButton(child: Text("Cancel"),onPressed: (){
+      
+       Get.back();
+    },style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),)
+  ],
+));
+                   
                     },
                     cntr: Text(
                       "Delete Ride",
                       style: Get.textTheme.headlineLarge,
                     ),
                   ),
-                ),
+                ) : Container(),
 
                 SizedBox(height: 25),
               ]),

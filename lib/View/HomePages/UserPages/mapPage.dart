@@ -39,8 +39,8 @@ class _MapScreenState extends State<MapScreen> {
             .toList();
       } else {
         Fluttertoast.showToast(
-            msg: "This is Center Short Toast",
-            toastLength: Toast.LENGTH_SHORT,
+            msg: "Unable to get routs",
+            toastLength: Toast.LENGTH_LONG,
             gravity: ToastGravity.CENTER,
             timeInSecForIosWeb: 1,
             backgroundColor: Colors.red,
@@ -50,6 +50,8 @@ class _MapScreenState extends State<MapScreen> {
       }
     });
   }
+
+//Get Current Location
 
   @override
   Widget build(BuildContext context) {
