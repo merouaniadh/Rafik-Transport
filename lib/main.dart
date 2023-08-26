@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
       darkTheme: darkTheme,
       //  home: Example(title: 'HOHO'),
       //home: MapScreen(),
-      initialRoute: '/',
+      initialRoute: '/signup',
       getPages: [
         GetPage(name: '/', page: () => const OneBoard()),
         GetPage(name: '/signup', page: () => const SignupPage()),
